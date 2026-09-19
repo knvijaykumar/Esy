@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: esy-farm-backend
+    env: python
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: PRICE_MODEL
+        value: amazon/chronos-2
+      - key: DEMAND_MODEL
+        value: amazon/chronos-2
+      - key: HF_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
