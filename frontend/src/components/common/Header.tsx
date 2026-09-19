@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, User, Building2, LogOut, ArrowLeft } from 'lucide-react';
 import { Farmer, StaffUser } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
@@ -23,7 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const { t, lang, setLang } = useLanguage();
 
   const renderLuxuryIcon = (iconKey: string) => {
     switch (iconKey) {
@@ -252,6 +254,34 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right End: Back Button & User Profile Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+          
+          {/* Language Selector */}
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as any)}
+            className="desktop-badge"
+            style={{
+              padding: '0.4rem 0.6rem',
+              borderRadius: 'var(--radius-md)',
+              border: '1.5px solid var(--color-border)',
+              background: '#ffffff',
+              color: 'var(--color-text-main)',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              outline: 'none',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            title="Select Language"
+          >
+            <option value="en">English</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+          </select>
+
           {/* Universal Back Button */}
           <button
             type="button"
@@ -446,15 +476,15 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Lower Bar: Dedicated Full-Width Navigation Tabs Bar */}
+      {/* Lower Bar: Dedicated Full-Width Navigation Tabs Bar (Animated) */}
       {!isAuthPage && (
         <div
           style={{
-            borderTop: '1px solid #e2e8f0',
-            borderBottom: '1px solid #e2e8f0',
+            borderTop: '1px solid #f1f5f9',
+            borderBottom: '1px solid #f1f5f9',
             background: '#ffffff',
-            padding: '0.35rem 1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+            padding: '0.65rem 1rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
           }}
           className="desktop-nav-bar"
         >
@@ -468,35 +498,93 @@ export const Header: React.FC<HeaderProps> = ({
               justifyContent: 'center',
             }}
           >
-            {/* Luxury Metallic Console Fulfilling the Horizontal Line */}
-            <div className="luxury-gold-console">
+            {/* Animated Pill Console */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                background: '#f8fafc',
+                padding: '0.4rem',
+                borderRadius: '9999px',
+                border: '1px solid #e2e8f0',
+                gap: '0.5rem',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+              }}
+              onMouseLeave={() => setHoveredTab(null)}
+            >
               {currentRole === 'farmer' &&
                 farmerNav.map((item) => {
                   const isActive = activeTab === item.id || (item.id === 'book-slot' && activeTab === 'find-center');
-                  const isTrack = item.id === 'track-status';
+                  const isHovered = hoveredTab === item.id;
                   const words = item.label.split(' ');
+                  const isTrack = item.id === 'track-status';
 
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`luxury-gold-btn ${isActive ? 'active' : ''}`}
+                      onMouseEnter={() => setHoveredTab(item.id)}
+                      style={{
+                        position: 'relative',
+                        padding: '0.6rem 1.25rem',
+                        borderRadius: '9999px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: isActive ? '#064e3b' : '#64748b',
+                        fontWeight: isActive ? 700 : 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.6rem',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                        outline: 'none',
+                        zIndex: 1,
+                      }}
                       title={item.label}
                     >
-                      {/* Specular flare reflection on top-left rim */}
-                      <span className="luxury-flare-accent" />
+                      {isActive && (
+                        <motion.div
+                          layoutId="header-active-pill"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: '#ffffff',
+                            borderRadius: '9999px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05)',
+                            border: '1px solid #e2e8f0',
+                            zIndex: -1,
+                          }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                      {isHovered && !isActive && (
+                        <motion.div
+                          layoutId="header-hover-pill"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: '#f1f5f9',
+                            borderRadius: '9999px',
+                            zIndex: -1,
+                          }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      )}
 
-                      {/* 3D Icon */}
-                      {renderLuxuryIcon(item.iconKey)}
+                      <motion.div
+                        animate={{ scale: isActive ? 1.05 : 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                      >
+                        {renderLuxuryIcon(item.iconKey)}
+                      </motion.div>
 
-                      {/* Label Text */}
                       {isTrack && words.length >= 2 ? (
-                        <div className="luxury-btn-text-multiline">
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1, textAlign: 'left', fontSize: '0.85rem' }}>
                           <span>{words[0]}</span>
                           <span>{words.slice(1).join(' ')}</span>
                         </div>
                       ) : (
-                        <span className="luxury-btn-text">{item.label}</span>
+                        <span style={{ fontSize: '0.95rem' }}>{item.label}</span>
                       )}
                     </button>
                   );
@@ -505,15 +593,59 @@ export const Header: React.FC<HeaderProps> = ({
               {currentRole === 'staff' &&
                 staffNav.map((item) => {
                   const isActive = activeTab === item.id;
+                  const isHovered = hoveredTab === item.id;
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavClick(item.id)}
-                      className={`luxury-staff-btn ${isActive ? 'active' : ''}`}
+                      onMouseEnter={() => setHoveredTab(item.id)}
+                      style={{
+                        position: 'relative',
+                        padding: '0.65rem 1.4rem',
+                        borderRadius: '9999px',
+                        border: 'none',
+                        background: 'transparent',
+                        color: isActive ? '#1e3a8a' : '#64748b',
+                        fontWeight: isActive ? 700 : 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                        outline: 'none',
+                        zIndex: 1,
+                        fontSize: '0.95rem',
+                      }}
                       title={item.label}
                     >
-                      <span className="luxury-flare-accent" />
-                      <span className="luxury-btn-text">{item.label}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="header-active-pill-staff"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: '#ffffff',
+                            borderRadius: '9999px',
+                            boxShadow: '0 4px 12px rgba(29,78,216,0.1), 0 1px 2px rgba(0,0,0,0.05)',
+                            border: '1px solid #bfdbfe',
+                            zIndex: -1,
+                          }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                      {isHovered && !isActive && (
+                        <motion.div
+                          layoutId="header-hover-pill-staff"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: '#f1f5f9',
+                            borderRadius: '9999px',
+                            zIndex: -1,
+                          }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                      <span>{item.label}</span>
                     </button>
                   );
                 })}
@@ -650,6 +782,30 @@ export const Header: React.FC<HeaderProps> = ({
             boxShadow: 'var(--shadow-md)',
           }}
         >
+          {/* Mobile Language Selector */}
+          <div style={{ padding: '0.5rem 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text-main)' }}>Language:</span>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as any)}
+              style={{
+                padding: '0.4rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+                background: '#f8fafc',
+                color: 'var(--color-text-main)',
+                fontSize: '0.9rem',
+                outline: 'none',
+              }}
+            >
+              <option value="en">English</option>
+              <option value="kn">ಕನ್ನಡ (Kannada)</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+              <option value="te">తెలుగు (Telugu)</option>
+              <option value="ta">தமிழ் (Tamil)</option>
+            </select>
+          </div>
           {currentRole === 'farmer' && (
             <>
               <div

@@ -84,7 +84,7 @@ class CropAssessmentService {
     for (const endpoint of endpoints) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -146,7 +146,7 @@ Output strictly a single valid JSON object (no markdown, no backticks, no other 
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8500);
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
         const response = await fetch(url, {
           method: 'POST',

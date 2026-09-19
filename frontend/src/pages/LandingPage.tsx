@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sprout,
   ShieldCheck,
@@ -113,6 +114,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [mspSelectedCategory, setMspSelectedCategory] = useState('all');
   const [isScrolledDown, setIsScrolledDown] = useState(false);
   const [isSideHintDismissed, setIsSideHintDismissed] = useState(false);
+  const [activeNav, setActiveNav] = useState('home');
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const mspScrollRef = useRef<HTMLDivElement>(null);
   const mspInputRef = useRef<HTMLInputElement>(null);
 
@@ -231,34 +234,77 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* Top Navbar */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 4rem', background: '#0f172a', color: '#ffffff', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         {/* Left Links */}
-        <nav style={{ display: 'flex', gap: '2rem', fontSize: '0.9rem', fontWeight: 500 }}>
-          <span
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            style={{ cursor: 'pointer', color: '#86efac' }}
-          >
-            • Home
-          </span>
-          <span
-            onClick={() => {
-              document.getElementById('official-msp-rates')?.scrollIntoView({ behavior: 'smooth' });
-              setTimeout(() => mspInputRef.current?.focus(), 450);
-            }}
-            style={{ cursor: 'pointer', opacity: 0.85 }}
-          >
-            Official MSP
-          </span>
-          <span
-            onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-            style={{ cursor: 'pointer', opacity: 0.85 }}
-          >
-            How it Works
-          </span>
-          <span
-            onClick={() => document.getElementById('tutorial-video')?.scrollIntoView({ behavior: 'smooth' })}
-            style={{ cursor: 'pointer', opacity: 0.85 }}
-          >
-            Tutorial Video
-          </span>
+        <nav
+          style={{
+            display: 'flex',
+            gap: '0.25rem',
+            background: 'rgba(255,255,255,0.05)',
+            padding: '0.4rem',
+            borderRadius: '9999px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+          onMouseLeave={() => setHoveredNav(null)}
+        >
+          {[
+            { id: 'home', label: 'Home', action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+            { id: 'msp', label: 'Official MSP', action: () => { document.getElementById('official-msp-rates')?.scrollIntoView({ behavior: 'smooth' }); setTimeout(() => mspInputRef.current?.focus(), 450); } },
+            { id: 'how-it-works', label: 'How it Works', action: () => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) },
+            { id: 'tutorial', label: 'Tutorial Video', action: () => document.getElementById('tutorial-video')?.scrollIntoView({ behavior: 'smooth' }) }
+          ].map((item) => {
+            const isActive = activeNav === item.id;
+            const isHovered = hoveredNav === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => { setActiveNav(item.id); item.action(); }}
+                onMouseEnter={() => setHoveredNav(item.id)}
+                style={{
+                  position: 'relative',
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: isActive ? '#064e3b' : 'rgba(255,255,255,0.85)',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  zIndex: 1,
+                  outline: 'none',
+                  transition: 'color 0.2s',
+                }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="landing-active-pill"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: '#86efac',
+                      borderRadius: '9999px',
+                      zIndex: -1,
+                      boxShadow: '0 2px 10px rgba(134,239,172,0.3)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+                {isHovered && !isActive && (
+                  <motion.div
+                    layoutId="landing-hover-pill"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '9999px',
+                      zIndex: -1,
+                    }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 1 }}>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
 
         {/* Center Logo */}
