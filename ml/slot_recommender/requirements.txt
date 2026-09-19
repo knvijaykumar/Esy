@@ -1,0 +1,3 @@
+# Smart Slot Recommender is a lightweight ranking engine that leverages
+# Chronos-2 demand forecasts and centre capacity constraints without requiring additional ML models.
+typing_extensions>=4.0.0
