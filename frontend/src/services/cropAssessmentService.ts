@@ -306,6 +306,36 @@ Output strictly a single valid JSON object (no markdown, no backticks, no other 
           const hintLower = (cropHint || '').toLowerCase();
           const isSugarcaneHint = hintLower.includes('sugar') || hintLower.includes('cane') || hintLower.includes('kabbu');
 
+          // Golden Yellow Grains (Paddy / Rice / Maize)
+          if (goldenRatio > 1.35) {
+            const isMaize = avgR > 150 && avgG > 130 && goldenRatio > 1.6;
+            const cropName = isMaize ? 'Maize (Corn)' : 'Paddy (Rice)';
+
+            if (spotRatio > 0.07 || totalVariance > 1500) {
+              resolve({
+                crop: cropName,
+                crop_confidence: 0.88,
+                disease_or_issue: 'Moisture discoloration / surface blemishes',
+                disease_confidence: 0.82,
+                condition: 'Moderate',
+                quality_warning: 'Visual indicators suggest uneven drying which may trigger refraction deduction at APMC.',
+                recommendation: `Sun-dry ${cropName.toLowerCase()} on clean tarpaulin for 1-2 days to lower moisture below 14%.`,
+              });
+              return;
+            } else {
+              resolve({
+                crop: cropName,
+                crop_confidence: 0.93,
+                disease_or_issue: 'No visible issue detected',
+                disease_confidence: 0.91,
+                condition: 'Healthy',
+                quality_warning: 'Uniform golden coloration meeting FAQ (Fair Average Quality) government standards.',
+                recommendation: 'Winnow to clear chaff and store in dry gunny bags ready for scheduled slot drop-off.',
+              });
+              return;
+            }
+          }
+
           // Sugarcane / Cut Canes (yellow-green-tan/purple-brown stalks, segmented lines)
           if (isSugarcaneHint || (avgR > 65 && avgG > 60 && Math.abs(avgR - avgG) < 65 && totalVariance > 150)) {
             if (spotRatio > 0.12) {
@@ -360,35 +390,7 @@ Output strictly a single valid JSON object (no markdown, no backticks, no other 
             }
           }
 
-          // Golden Yellow Grains (Paddy / Rice / Maize)
-          if (goldenRatio > 1.35) {
-            const isMaize = avgR > 150 && avgG > 130 && goldenRatio > 1.6;
-            const cropName = isMaize ? 'Maize (Corn)' : 'Paddy (Rice)';
-
-            if (spotRatio > 0.07 || totalVariance > 1500) {
-              resolve({
-                crop: cropName,
-                crop_confidence: 0.88,
-                disease_or_issue: 'Moisture discoloration / surface blemishes',
-                disease_confidence: 0.82,
-                condition: 'Moderate',
-                quality_warning: 'Visual indicators suggest uneven drying which may trigger refraction deduction at APMC.',
-                recommendation: `Sun-dry ${cropName.toLowerCase()} on clean tarpaulin for 1-2 days to lower moisture below 14%.`,
-              });
-              return;
-            } else {
-              resolve({
-                crop: cropName,
-                crop_confidence: 0.93,
-                disease_or_issue: 'No visible issue detected',
-                disease_confidence: 0.91,
-                condition: 'Healthy',
-                quality_warning: 'Uniform golden coloration meeting FAQ (Fair Average Quality) government standards.',
-                recommendation: 'Winnow to clear chaff and store in dry gunny bags ready for scheduled slot drop-off.',
-              });
-              return;
-            }
-          }
+          // Golden Yellow Grains (Paddy / Rice / Maize) check moved above Sugarcane
 
           // Reddish-Brown Grains / Pulses (Ragi / Bengal Gram)
           if (redBrownRatio > 0.82) {
