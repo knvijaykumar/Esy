@@ -42,7 +42,7 @@ class CropVisionModel:
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "").strip() or None
-        self.primary_models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash"]
+        self.primary_models = ["gemini-1.5-flash", "gemini-1.5-pro"]
 
     def decode_image(self, raw_image: str) -> Tuple[bytes, str]:
         """
@@ -323,7 +323,7 @@ class CropVisionModel:
             # 5. Sugarcane / Stalks / Cane Bundles (fibrous, nodes, green-tan/purple/brown tones)
             elif (
                 (crop_hint and any(w in crop_hint.lower() for w in ["sugar", "cane", "karumbu", "kabbu"]))
-                or (avg_r > 70 and avg_g > 65 and total_variance > 180 and abs(avg_r - avg_g) < 60)
+                or (avg_r > 80 and avg_g > 75 and total_variance > 400 and abs(avg_r - avg_g) < 40 and avg_g > avg_b * 1.15)
             ):
                 if spot_ratio > 0.12:
                     return {

@@ -118,7 +118,7 @@ class CropAssessmentService {
     const { mimeType, data: base64Data } = this.extractBase64Data(rawImage);
     if (!base64Data || base64Data.length < 30) return null;
 
-    const models = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-3.6-flash'];
+    const models = ['gemini-1.5-flash', 'gemini-1.5-pro'];
     const hintText = cropHint && cropHint.trim().length > 1 ? ` Context note from farmer: ${cropHint}.` : '';
 
     const prompt = `You are an expert agricultural crop quality inspector for Karnataka APMC Public Procurement Centres and Sugar Mills.
@@ -337,7 +337,8 @@ Output strictly a single valid JSON object (no markdown, no backticks, no other 
           }
 
           // Sugarcane / Cut Canes (yellow-green-tan/purple-brown stalks, segmented lines)
-          if (isSugarcaneHint || (avgR > 65 && avgG > 60 && Math.abs(avgR - avgG) < 65 && totalVariance > 150)) {
+          // Tightened condition so brown/mixed images like Arecanut don't false-trigger.
+          if (isSugarcaneHint || (avgR > 80 && avgG > 75 && Math.abs(avgR - avgG) < 40 && totalVariance > 400 && avgG > avgB * 1.15)) {
             if (spotRatio > 0.12) {
               resolve({
                 crop: 'Sugarcane (Cut Stalks)',
@@ -422,15 +423,15 @@ Output strictly a single valid JSON object (no markdown, no backticks, no other 
             }
           }
 
-          // Light Brown Cereal (Wheat / Pulses)
+          // Unidentified Catch-All
           resolve({
-            crop: 'Wheat / Cereal Grain',
-            crop_confidence: 0.88,
-            disease_or_issue: 'No visible infestation or mold detected',
-            disease_confidence: 0.86,
-            condition: 'Healthy',
-            quality_warning: 'Grain appearance is uniform and free of visible foreign matter.',
-            recommendation: 'Verify moisture content is under 12% before APMC intake.',
+            crop: cropHint?.trim() || 'Unidentified Agricultural Sample',
+            crop_confidence: 0.65,
+            disease_or_issue: 'Visual pattern unclear. Please use the AI endpoint.',
+            disease_confidence: 0.60,
+            condition: 'Moderate',
+            quality_warning: 'The offline pixel analyzer could not strongly match this image to a known crop profile.',
+            recommendation: 'Ensure your app is connected to the backend API or provide a clear, well-lit close-up photo.',
           });
         } catch {
           resolve(this.getDefaultHeuristicResult(cropHint));
